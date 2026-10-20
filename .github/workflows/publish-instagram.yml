@@ -1,0 +1,49 @@
+name: Publicar foto no Instagram (controle seguro)
+
+on:
+  workflow_dispatch:
+    inputs:
+      post_id:
+        description: "ID do post aprovado em content/queue.json"
+        type: string
+        required: true
+      confirm:
+        description: "Digite PUBLICAR:<post_id> para autorizar publicação real"
+        type: string
+        required: true
+  schedule:
+    - cron: '*/15 * * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram-publication-lock
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Testar validacoes offline
+        run: python -m unittest discover -s tests -v
+      - name: Publicar um post explicitamente autorizado
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          POST_ID: ${{ inputs.post_id }}
+          POST_CONFIRM: ${{ inputs.confirm }}
+        run: python scripts/instagram_publish.py --mode manual --id "$POST_ID" --confirm "$POST_CONFIRM"
+      - name: Verificar fila agendada (desativada por padrao)
+        if: github.event_name == 'schedule' && vars.INSTAGRAM_AUTO_PUBLISH_ENABLED == 'true'
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          AUTO_PUBLISH_ENABLED: 'true'
+        run: python scripts/scheduled_publish.py
