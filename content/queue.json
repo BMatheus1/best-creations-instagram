@@ -1,0 +1,14 @@
+[
+  {
+    "id": "bc-post-001",
+    "type": "IMAGE",
+    "status": "draft",
+    "caption": "Best Creations | Digital Studio. Soluções digitais com identidade, estratégia e tecnologia. #BestCreations #SitesProfissionais #LandingPages",
+    "media_urls": [
+      "https://raw.githubusercontent.com/BMatheus1/best-creations-instagram/main/post_01.png"
+    ],
+    "scheduled_at": null,
+    "approved_by": null,
+    "notes": "Exemplo inicial. Exige autorização explícita para aprovar."
+  }
+]
