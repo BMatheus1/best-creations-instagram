@@ -5,7 +5,10 @@ on:
   push:
     paths:
       - "scripts/social_manager.py"
+      - "scripts/instagram_publish.py"
+      - "scripts/scheduled_publish.py"
       - "tests/test_social_manager.py"
+      - "tests/test_instagram_publish.py"
       - "content/queue.json"
       - ".github/workflows/simulate-publications.yml"
 
