@@ -1,0 +1,27 @@
+name: Simular fila de publicacoes
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/social_manager.py"
+      - "tests/test_social_manager.py"
+      - "content/queue.json"
+      - ".github/workflows/simulate-publications.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Testes unitarios
+        run: python -m unittest discover -s tests -v
+      - name: Simulacao de publicacoes (sem token)
+        run: python scripts/social_manager.py --dry-run
