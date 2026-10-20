@@ -3,7 +3,7 @@ import os
 import sys
 from datetime import datetime, timezone
 
-from instagram_publish import publish_one
+from instagram_publish import publish_one, read_ledger
 from social_manager import read_queue
 
 
@@ -20,6 +20,11 @@ def main():
     ]
     if not due:
         print("Nenhuma foto aprovada vencida.")
+        return
+    ledger = read_ledger()
+    due = [item for item in due if item["id"] not in ledger]
+    if not due:
+        print("Todos os conteúdos vencidos já possuem tentativas registradas.")
         return
     due.sort(key=lambda item: item["scheduled_at"])
     # Apenas 1 por execução; lock persistente previne duplicação.
