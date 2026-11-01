@@ -1,0 +1,58 @@
+name: Lancamento Instagram - Stories e Feed
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Simular ou publicar a proxima midia da fila'
+        type: choice
+        options:
+          - dry-run
+          - publish-next
+        required: true
+        default: dry-run
+      confirm:
+        description: 'Para publicar digite PUBLICAR_PROXIMO; dry-run nao exige confirmacao'
+        type: string
+        required: false
+  schedule:
+    - cron: '13,28,43,58 * * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram-publication-lock
+  cancel-in-progress: false
+
+jobs:
+  lancamento:
+    if: ${{ github.event_name != 'schedule' || vars.INSTAGRAM_LAUNCH_AUTO_PUBLISH_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Executar testes offline
+        run: python -m unittest discover -s tests -p 'test_launch_automation.py' -v
+      - name: Simular proxima publicacao (nenhum envio)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.action == 'dry-run' }}
+        run: python scripts/publish_launch.py --mode dry-run
+      - name: Publicar um item explicitamente autorizado
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.action == 'publish-next' }}
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_LAUNCH_ENABLE_MANUAL: 'true'
+          CONFIRM: ${{ inputs.confirm }}
+        run: python scripts/publish_launch.py --mode manual --confirm "$CONFIRM"
+      - name: Publicacao automatica opcional (desativada ate voce habilitar)
+        if: ${{ github.event_name == 'schedule' }}
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_LAUNCH_ENABLE_AUTO: 'true'
+        run: python scripts/publish_launch.py --mode auto
