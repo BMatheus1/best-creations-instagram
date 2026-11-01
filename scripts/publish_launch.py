@@ -240,7 +240,13 @@ def execute(mode, confirm=""):
         print("LANÇAMENTO CONCLUÍDO: todas as 27 mídias já estão registradas como publicadas")
         return
     print(f"PRÓXIMO: {pending['id']} [{pending['channel']}] {pending['title']}")
-    check_pacing(pending, ledger, utcnow())
+    try:
+        check_pacing(pending, ledger, utcnow())
+    except Blocked as exc:
+        if mode == "auto" and str(exc).startswith("Aguardando intervalo de segurança"):
+            print(f"AGUARDANDO: {exc}")
+            return
+        raise
     if mode == "dry-run":
         print("DRY RUN OK: fila completa, mídias locais válidas e ordem correta; nenhum post enviado")
         return
