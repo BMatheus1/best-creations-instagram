@@ -245,8 +245,8 @@ def execute(mode, confirm=""):
     try:
         check_pacing(pending, ledger, utcnow())
     except Blocked as exc:
-        if mode == "auto" and str(exc).startswith("Aguardando intervalo de segurança"):
-            print(f"AGUARDANDO: {exc}")
+        if str(exc).startswith("Aguardando intervalo de segurança") and mode in ("auto", "dry-run"):
+            print(f"AGUARDANDO INTERVALO ({mode}): {exc}. Nenhum post enviado")
             return
         raise
     if mode == "dry-run":
