@@ -182,6 +182,23 @@ class PublicationTests(unittest.TestCase):
              patch.object(publisher, "commit_ledger", side_effect=AssertionError("Commit forbidden")):
             publisher.execute("dry-run")
 
+    def test_dry_run_during_wait_is_not_error_or_publication(self):
+        first = self.items[0]
+        just_published = publisher.utcnow() - timedelta(minutes=1)
+        ledger = {
+            first["id"]: {
+                "status": "published",
+                "published_at": just_published.isoformat(),
+                "channel": "story",
+            }
+        }
+        (self.temp / "state" / "launch_publications.json").write_text(json.dumps(ledger))
+        with patch.object(publisher, "graph_request", side_effect=AssertionError("Network forbidden")), \
+             patch.object(publisher, "commit_ledger", side_effect=AssertionError("Commit forbidden")):
+            publisher.execute("dry-run")
+            with patch.dict(os.environ, {"INSTAGRAM_LAUNCH_ENABLE_AUTO": "true"}):
+                publisher.execute("auto")
+
     def test_five_minute_feed_interval(self):
         now = datetime(2026, 11, 2, 15, tzinfo=timezone.utc)
         published = now - timedelta(minutes=4, seconds=59)
