@@ -64,7 +64,7 @@
     "published_at": "2026-11-02T17:08:47.671723+00:00"
   },
   "bc-launch-009": {
-    "status": "container_created",
+    "status": "publish_requested",
     "started_at": "2026-11-02T17:13:48.294104+00:00",
     "channel": "feed",
     "container_id": "18117009032109727",
