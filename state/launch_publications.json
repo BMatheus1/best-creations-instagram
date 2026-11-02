@@ -24,7 +24,7 @@
     "published_at": "2026-11-02T16:42:42.100579+00:00"
   },
   "bc-launch-004": {
-    "status": "container_created",
+    "status": "publish_requested",
     "started_at": "2026-11-02T16:47:42.730676+00:00",
     "channel": "story",
     "container_id": "18117006680109727",
