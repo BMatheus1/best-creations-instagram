@@ -1,4 +1,6 @@
 name: Lancamento Instagram - Stories e Feed
+# 2026-11-02: feed 2-9 excluídos via content/launch_exclusions.json;
+# retomada segura no próximo item permitido após cancelamento do lote anterior.
 
 on:
   push:
