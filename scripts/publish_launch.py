@@ -89,9 +89,29 @@ def read_ledger():
     return result
 
 
+def read_exclusions():
+    """Publicações retiradas da fila pelo titular, sem apagar histórico da Meta."""
+    exclusions_path = ROOT / "content" / "launch_exclusions.json"
+    if not exclusions_path.is_file():
+        return set()
+    data = json.loads(exclusions_path.read_text(encoding="utf-8"))
+    excluded = data.get("excluded_ids")
+    if not isinstance(excluded, list) or not all(
+        isinstance(identifier, str) and re.fullmatch(r"bc-launch-\\d{3}", identifier)
+        for identifier in excluded
+    ):
+        raise Blocked("Lista de exclusões inválida")
+    return set(excluded)
+
+
 def next_item(items, ledger):
+    excluded = read_exclusions()
     for item in items:
         entry = ledger.get(item["id"])
+        if item["id"] in excluded:
+            if entry is not None and entry.get("status") != "published":
+                raise Blocked(f"Item cancelado com tentativa pendente ({item['id']}): revisão manual")
+            continue
         if entry is None:
             return item
         if entry.get("status") != "published":
