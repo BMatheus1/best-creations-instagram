@@ -1,9 +1,9 @@
 {
   "bc-launch-001": {
-    "status": "attempt_started",
+    "status": "container_created",
     "started_at": "2026-11-02T15:47:13.717992+00:00",
     "channel": "story",
-    "container_id": null,
+    "container_id": "18117001133109727",
     "ig_media_id": null
   }
 }
