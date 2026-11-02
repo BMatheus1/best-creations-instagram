@@ -2,6 +2,10 @@ name: Verificar conexao Instagram
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/test_instagram_connection.py'
+      - '.github/workflows/test-instagram-connection.yml'
 
 permissions:
   contents: read
