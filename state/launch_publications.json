@@ -16,10 +16,10 @@
     "published_at": "2026-11-02T16:37:29.893544+00:00"
   },
   "bc-launch-003": {
-    "status": "attempt_started",
+    "status": "container_created",
     "started_at": "2026-11-02T16:42:30.319707+00:00",
     "channel": "story",
-    "container_id": null,
+    "container_id": "18117006323109727",
     "ig_media_id": null
   }
 }
