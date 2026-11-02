@@ -275,7 +275,7 @@ class PublicationTests(unittest.TestCase):
             "INSTAGRAM_LAUNCH_VARIABLE_ENABLED": "true",
             "INSTAGRAM_ACCESS_TOKEN": "test",
         }
-        with patch.dict(os.environ, env, clear=True), \\
+        with patch.dict(os.environ, env, clear=True), \
              patch.object(publisher, "publish_item", side_effect=AssertionError("Must never republish")):
             with self.assertRaises(publisher.Blocked):
                 batch.execute()
@@ -301,10 +301,10 @@ class PublicationTests(unittest.TestCase):
             "INSTAGRAM_LAUNCH_VARIABLE_ENABLED": "true",
             "INSTAGRAM_ACCESS_TOKEN": "test",
         }
-        with patch.dict(os.environ, env, clear=True), \\
-             patch.object(publisher, "publish_item", side_effect=fake_publish), \\
-             patch.object(publisher, "check_pacing"), \\
-             patch.object(batch, "seconds_until_allowed", return_value=0), \\
+        with patch.dict(os.environ, env, clear=True), \
+             patch.object(publisher, "publish_item", side_effect=fake_publish), \
+             patch.object(publisher, "check_pacing"), \
+             patch.object(batch, "seconds_until_allowed", return_value=0), \
              patch.object(batch.time, "sleep", side_effect=AssertionError("Should not wait")):
             batch.execute()
 
@@ -322,8 +322,8 @@ class PublicationTests(unittest.TestCase):
         }
         class StopTest(Exception):
             pass
-        with patch.dict(os.environ, env, clear=True), \\
-             patch.object(publisher, "publish_item", side_effect=AssertionError("Cannot publish before interval")), \\
+        with patch.dict(os.environ, env, clear=True), \
+             patch.object(publisher, "publish_item", side_effect=AssertionError("Cannot publish before interval")), \
              patch.object(batch.time, "sleep", side_effect=StopTest) as sleeper:
             with self.assertRaises(StopTest):
                 batch.execute()
