@@ -14,5 +14,12 @@
     "container_id": "18117005864109727",
     "ig_media_id": "18466309192190736",
     "published_at": "2026-11-02T16:37:29.893544+00:00"
+  },
+  "bc-launch-003": {
+    "status": "attempt_started",
+    "started_at": "2026-11-02T16:42:30.319707+00:00",
+    "channel": "story",
+    "container_id": null,
+    "ig_media_id": null
   }
 }
