@@ -114,3 +114,9 @@ Após ativar: seis Stories restantes, então 20 fotos do feed; os **Destaques pe
 A Release `bc-launch-2026-11` já foi criada corretamente com o ZIP `Best_Creations_Instagram_Lancamento_27_Artes.zip` (5,9 MB). A execução de importação falhou em **Baixar ZIP do Release informado** porque o script antigo buscava o nome `best_creations_publicacao_stories_feed.zip`: o GitHub retornou `no assets match the file pattern`. O importador agora aceita qualquer **único** ZIP da Release. Os testes antigos também passaram a instalar Pillow antes de executar toda a suíte; a ausência da biblioteca causava quatro falhas independentes.
 
 **Para repetir:** Actions → Importar pacote de lancamento (sem publicar) → Run workflow → branch main → `release_tag: bc-launch-2026-11` → `confirm: IMPORTAR_27_ARTES`. Depois confira se a fila `content/launch_queue.json` existe e execute `dry-run`. **Não ative a variável de publicação automática antes de revisar o primeiro Story e testar a API.**
+
+## Cancelamento de oito posts institucionais do feed (02/11/2026)
+
+Por solicitação do responsável, as posições **2 a 9 do feed** foram retiradas da **fila ativa de publicação**, IDs `bc-launch-009` a `bc-launch-016`. A lista de exclusão é `content/launch_exclusions.json`, aplicada por `scripts/publish_launch.py` tanto em publicação manual quanto automática; as artes e metadados originais permanecem arquivados para auditoria e não são reenviados. O post 2 do feed (`bc-launch-009`, “Institucional 01”) **já havia sido publicado** às 14h13 (Brasília) quando a solicitação chegou; removê-lo do Instagram exige exclusão pelo usuário na plataforma. Os posts 3 a 9 ainda não haviam sido publicados.
+
+O próximo item autorizado, depois das publicações já registradas, passa a ser **`bc-launch-017` — feed 10, “Institucional 09”**. O histórico de posts publicados jamais é apagado. A execução contínua anterior foi cancelada e a fila editada antes de reiniciar; nenhuma publicação deve ser repetida.
