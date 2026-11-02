@@ -168,6 +168,21 @@ class PublicationTests(unittest.TestCase):
         with self.assertRaises(publisher.Blocked):
             publisher.next_item(self.items, ledger)
 
+    def test_feed_two_to_nine_are_excluded_and_next_is_ten(self):
+        exclusions = {"excluded_ids": [f"bc-launch-{i:03d}" for i in range(9, 17)]}
+        (self.temp / "content" / "launch_exclusions.json").write_text(json.dumps(exclusions))
+        ledger = {item["id"]: {"status": "published"} for item in self.items[:9]}
+        self.assertEqual(publisher.next_item(self.items, ledger)["id"], "bc-launch-017")
+        self.assertEqual(publisher.read_exclusions(), set(exclusions["excluded_ids"]))
+
+    def test_canceled_item_with_unconfirmed_attempt_blocks(self):
+        exclusions = {"excluded_ids": ["bc-launch-010"]}
+        (self.temp / "content" / "launch_exclusions.json").write_text(json.dumps(exclusions))
+        ledger = {item["id"]: {"status": "published"} for item in self.items[:9]}
+        ledger["bc-launch-010"] = {"status": "container_created"}
+        with self.assertRaises(publisher.Blocked):
+            publisher.next_item(self.items, ledger)
+
     def test_manual_cannot_publish_without_explicit_confirmation(self):
         with patch.dict(os.environ, {"INSTAGRAM_LAUNCH_ENABLE_MANUAL": "true"}):
             with self.assertRaises(publisher.Blocked):
