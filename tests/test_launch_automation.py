@@ -182,13 +182,29 @@ class PublicationTests(unittest.TestCase):
              patch.object(publisher, "commit_ledger", side_effect=AssertionError("Commit forbidden")):
             publisher.execute("dry-run")
 
-    def test_12_hour_feed_interval(self):
+    def test_five_minute_feed_interval(self):
         now = datetime(2026, 11, 2, 15, tzinfo=timezone.utc)
-        published = now - timedelta(hours=4)
+        published = now - timedelta(minutes=4, seconds=59)
         ledger = {"prior": {"status": "published", "published_at": published.isoformat(), "channel": "feed"}}
         with self.assertRaises(publisher.Blocked):
             publisher.check_pacing(self.items[9], ledger, now)
-        publisher.check_pacing(self.items[9], ledger, now + timedelta(hours=12))
+        publisher.check_pacing(self.items[9], ledger, now + timedelta(seconds=1))
+
+    def test_five_minute_story_interval(self):
+        now = datetime(2026, 11, 2, 15, tzinfo=timezone.utc)
+        published = now - timedelta(minutes=4, seconds=59)
+        ledger = {"prior": {"status": "published", "published_at": published.isoformat(), "channel": "story"}}
+        with self.assertRaises(publisher.Blocked):
+            publisher.check_pacing(self.items[1], ledger, now)
+        publisher.check_pacing(self.items[1], ledger, now + timedelta(seconds=1))
+
+    def test_five_minute_transition_from_last_story_to_first_feed(self):
+        now = datetime(2026, 11, 2, 15, tzinfo=timezone.utc)
+        published = now - timedelta(minutes=4, seconds=59)
+        ledger = {"prior": {"status": "published", "published_at": published.isoformat(), "channel": "story"}}
+        with self.assertRaises(publisher.Blocked):
+            publisher.check_pacing(self.items[7], ledger, now)
+        publisher.check_pacing(self.items[7], ledger, now + timedelta(seconds=1))
 
     def test_story_media_payload_has_no_caption(self):
         events = []
