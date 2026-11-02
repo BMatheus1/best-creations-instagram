@@ -97,7 +97,7 @@ def read_exclusions():
     data = json.loads(exclusions_path.read_text(encoding="utf-8"))
     excluded = data.get("excluded_ids")
     if not isinstance(excluded, list) or not all(
-        isinstance(identifier, str) and re.fullmatch(r"bc-launch-\\d{3}", identifier)
+        isinstance(identifier, str) and identifier.startswith("bc-launch-") and len(identifier) == 13
         for identifier in excluded
     ):
         raise Blocked("Lista de exclusões inválida")
