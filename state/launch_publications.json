@@ -112,10 +112,11 @@
     "published_at": "2026-11-02T17:41:52.921373+00:00"
   },
   "bc-launch-022": {
-    "status": "publish_requested",
+    "status": "published",
     "started_at": "2026-11-02T17:46:53.442251+00:00",
     "channel": "feed",
     "container_id": "18117012674109727",
-    "ig_media_id": null
+    "ig_media_id": "18109776407244871",
+    "published_at": "2026-11-02T17:47:04.228991+00:00"
   }
 }
