@@ -25,9 +25,11 @@ API_BASE = "https://graph.instagram.com/v24.0"
 ACCOUNT = "bestcreations011"
 STORY_COUNT = 7
 FEED_COUNT = 20
-STORY_GAP = timedelta(minutes=15)
-FEED_GAP = timedelta(hours=12)
-FIRST_FEED_GAP = timedelta(minutes=60)
+# Lancamento acelerado: GitHub Actions agenda no minimo a cada 5 minutos.
+# Nao elimina validacao de conta, ordem, integridade ou bloqueio de duplicidade.
+STORY_GAP = timedelta(minutes=5)
+FEED_GAP = timedelta(minutes=5)
+FIRST_FEED_GAP = timedelta(minutes=5)
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 
 
