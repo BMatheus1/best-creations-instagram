@@ -1,6 +1,6 @@
 # Lançamento Instagram Best Creations — 7 Stories + 20 posts
 
-Status: **27 artes importadas; o primeiro Story foi publicado e confirmado pela API em 02/11/2026; publicação automática permanece opcional via variável do GitHub**.
+Status: **27 artes importadas; primeiro Story confirmado pela API em 02/11/2026. Publicação automática ativada via variável do GitHub, com execução contínua como alternativa aos disparos atrasados ou perdidos do cron.**
 
 Conta fixada no código: **@bestcreations011**. Sequência obrigatória: **7 Stories primeiro**, depois **20 fotos do feed**. O PDF Reader foi substituído pelo Cantinho do Luiz, conforme o pacote de lançamento.
 
@@ -54,20 +54,22 @@ Depois da importação, revisão e dry-run aprovados, se desejar que a sequênci
 
 1. Entre em **Settings → Secrets and variables → Actions → Variables**.
 2. Crie ou altere **`INSTAGRAM_LAUNCH_AUTO_PUBLISH_ENABLED` = `true`**.
-3. O workflow verifica a fila **a cada 5 minutos** pelo cron `*/5 * * * *` (UTC). O GitHub Actions pode atrasar ou eventualmente pular disparos, então não há garantia de horário exato.
-4. É publicado, no máximo, **um item por execução**; a fila exige intervalos:
-   - Stories: pelo menos **5 minutos** entre Stories.
-   - Primeiro post do feed: pelo menos **5 minutos** após o último Story.
-   - Próximos posts do feed: pelo menos **5 minutos** entre fotos.
-5. Desative novamente mudando essa variável para `false` (ou removendo-a).
+3. Há dois mecanismos de continuidade:
+   - **Lote contínuo**: o workflow é acionado uma vez com autorização e segue a fila em uma única execução do GitHub Actions, publicando **uma mídia por vez com pelo menos 5 minutos após a publicação anterior**. Assim não depende de agendamentos periódicos para cada conteúdo. O limite da execução é 210 minutos.
+   - **Cron de contingência**: `*/5 * * * *` (UTC). A cada disparo, publica no máximo um item pendente. O GitHub Actions pode atrasar ou omitir esses disparos; **não é uma garantia de entrega**.
+4. A fila exige sempre o mesmo intervalo mínimo:
+   - Stories: **5 minutos**.
+   - Primeiro feed após o último Story: **5 minutos**.
+   - Feed para feed: **5 minutos**.
+5. Para impedir novos disparos, altere a variável `INSTAGRAM_LAUNCH_AUTO_PUBLISH_ENABLED` para `false`. **IMPORTANTE: para interromper um lote já em execução, cancele o job na aba Actions**; variáveis são capturadas no início e alterar `true` para `false` não interrompe uma execução já iniciada.
 
-O GitHub Actions pode atrasar execuções agendadas e não garante o minuto exato. A automação não usa disparos em massa, não publica Stories repetidos e respeita interrupções.
+O lote é ativado apenas quando a variável está `true` e houver uma execução explicitamente iniciada (commit marcado `[start-launch-batch]` ou despacho manual `publish-batch` com `PUBLICAR_LOTE`). Cada item fica registrado como tentativa antes do envio à Meta; erro ou resultado ambíguo interrompe o lote sem repetição automática.
 
 A variável antiga `INSTAGRAM_AUTO_PUBLISH_ENABLED` pertence ao publicador inicial de fotos e **não controla este lançamento**; mantenha desativada para evitar concorrência.
 
 ### Lançamento acelerado (alteração de 02/11/2026)
 
-O responsável solicitou intervalo mais curto: a fila mantém as 27 publicações separadas em ordem, mas agora verifica uma publicação a cada 5 minutos no mínimo (a menor frequência aceita em schedules do GitHub Actions). Se as execuções não atrasarem e houver capacidade na API, os 26 itens restantes levam **aproximadamente 2h10** após a primeira publicação; atrasos e limites do Instagram podem prolongar. A publicação em massa de 20 fotos no feed em pouco tempo **pode prejudicar o alcance ou ser entendida como comportamento excessivo pela plataforma**. Esta é uma configuração de lançamento excepcional, não recomendada como cadência editorial recorrente.
+O responsável solicitou intervalo mais curto: a fila mantém as 27 publicações separadas em ordem e agora aplica **5 minutos mínimos entre conteúdos**. O cron do GitHub Actions sozinho não iniciou as próximas publicações após sua ativação; o modo de lote contínuo corrige essa dependência. Se a API aceitar e a execução permanecer ativa, os 26 itens restantes podem levar cerca de **2h10**, além do tempo de processamento; erros, limites da Meta e atrasos podem prolongar. A publicação em massa de 20 fotos no feed em pouco tempo **pode prejudicar o alcance ou ser entendida como comportamento excessivo pela plataforma**. Esta é uma configuração de lançamento excepcional, não recomendada como cadência editorial recorrente.
 
 Não crie nova Release e não importe novamente: o primeiro Story está registrado como publicado em `state/launch_publications.json`. Ativar apenas `INSTAGRAM_LAUNCH_AUTO_PUBLISH_ENABLED=true` no GitHub após revisar o ritmo desejado. A nova configuração **não reenvia** o primeiro Story.
 
@@ -105,7 +107,7 @@ Estado verificado em 02/11/2026: primeiro Story publicado; 26 pendentes no hist�
 
 Após ativar: seis Stories restantes, então 20 fotos do feed; os **Destaques permanecem etapa manual no Instagram**.
 
-**Esta integração ainda não prova publicação efetiva na Meta.** Esse teste só acontecerá quando a conta, o token e os arquivos públicos forem verificados numa execução autorizada.
+**A publicação do primeiro Story foi confirmada na API Meta em 02/11/2026**, com identificador persistido em `state/launch_publications.json`. As demais publicações precisam de confirmação individual no histórico. Não considerar sucesso de CI offline como confirmação de publicação.
 
 ## Correção confirmada em 02/11/2026
 
