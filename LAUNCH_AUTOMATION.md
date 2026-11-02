@@ -1,6 +1,6 @@
 # Lançamento Instagram Best Creations — 7 Stories + 20 posts
 
-Status: **automação implementada e testada offline; não publicada, não ativada**.
+Status: **27 artes importadas; o primeiro Story foi publicado e confirmado pela API em 02/11/2026; publicação automática permanece opcional via variável do GitHub**.
 
 Conta fixada no código: **@bestcreations011**. Sequência obrigatória: **7 Stories primeiro**, depois **20 fotos do feed**. O PDF Reader foi substituído pelo Cantinho do Luiz, conforme o pacote de lançamento.
 
@@ -54,16 +54,22 @@ Depois da importação, revisão e dry-run aprovados, se desejar que a sequênci
 
 1. Entre em **Settings → Secrets and variables → Actions → Variables**.
 2. Crie ou altere **`INSTAGRAM_LAUNCH_AUTO_PUBLISH_ENABLED` = `true`**.
-3. O workflow verifica a fila nos minutos **13, 28, 43 e 58** de cada hora. Horários em UTC.
+3. O workflow verifica a fila **a cada 5 minutos** pelo cron `*/5 * * * *` (UTC). O GitHub Actions pode atrasar ou eventualmente pular disparos, então não há garantia de horário exato.
 4. É publicado, no máximo, **um item por execução**; a fila exige intervalos:
-   - Stories: pelo menos **15 minutos** entre Stories.
-   - Primeiro post do feed: pelo menos **60 minutos** após o último Story.
-   - Próximos posts do feed: pelo menos **12 horas** entre fotos.
+   - Stories: pelo menos **5 minutos** entre Stories.
+   - Primeiro post do feed: pelo menos **5 minutos** após o último Story.
+   - Próximos posts do feed: pelo menos **5 minutos** entre fotos.
 5. Desative novamente mudando essa variável para `false` (ou removendo-a).
 
 O GitHub Actions pode atrasar execuções agendadas e não garante o minuto exato. A automação não usa disparos em massa, não publica Stories repetidos e respeita interrupções.
 
-A variável antiga `INSTAGRAM_AUTO_PUBLISH_ENABLED` pertence ao publicador inicial de fotos e **não controla este lançamento**.
+A variável antiga `INSTAGRAM_AUTO_PUBLISH_ENABLED` pertence ao publicador inicial de fotos e **não controla este lançamento**; mantenha desativada para evitar concorrência.
+
+### Lançamento acelerado (alteração de 02/11/2026)
+
+O responsável solicitou intervalo mais curto: a fila mantém as 27 publicações separadas em ordem, mas agora verifica uma publicação a cada 5 minutos no mínimo (a menor frequência aceita em schedules do GitHub Actions). Se as execuções não atrasarem e houver capacidade na API, os 26 itens restantes levam **aproximadamente 2h10** após a primeira publicação; atrasos e limites do Instagram podem prolongar. A publicação em massa de 20 fotos no feed em pouco tempo **pode prejudicar o alcance ou ser entendida como comportamento excessivo pela plataforma**. Esta é uma configuração de lançamento excepcional, não recomendada como cadência editorial recorrente.
+
+Não crie nova Release e não importe novamente: o primeiro Story está registrado como publicado em `state/launch_publications.json`. Ativar apenas `INSTAGRAM_LAUNCH_AUTO_PUBLISH_ENABLED=true` no GitHub após revisar o ritmo desejado. A nova configuração **não reenvia** o primeiro Story.
 
 ## 5. Proteções contra falhas
 
@@ -93,9 +99,11 @@ A variável antiga `INSTAGRAM_AUTO_PUBLISH_ENABLED` pertence ao publicador inici
 
 Antes do ZIP: histórico vazio, sem fila pronta, publicação desativada.
 
-Depois do ZIP: fila completa com 27 imagens e legendas, ainda sem publicações.
+Depois do ZIP: fila completa com 27 imagens e legendas.
 
-Após ativar: primeiros 7 Stories, então 20 fotos do feed; os **Destaques permanecem etapa manual no Instagram**.
+Estado verificado em 02/11/2026: primeiro Story publicado; 26 pendentes no histórico.
+
+Após ativar: seis Stories restantes, então 20 fotos do feed; os **Destaques permanecem etapa manual no Instagram**.
 
 **Esta integração ainda não prova publicação efetiva na Meta.** Esse teste só acontecerá quando a conta, o token e os arquivos públicos forem verificados numa execução autorizada.
 
