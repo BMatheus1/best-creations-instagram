@@ -15,6 +15,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import import_launch_assets as importer
 import publish_launch as publisher
+import run_launch_batch as batch
 
 
 def make_items(temp: Path):
@@ -257,6 +258,77 @@ class PublicationTests(unittest.TestCase):
             publisher.publish_item("fake-token", self.items[7])
             self.assertEqual(events[0][2]["caption"], self.items[7]["caption"])
             self.assertNotIn("media_type", events[0][2])
+
+    def test_batch_requires_both_auto_authorizations(self):
+        with patch.dict(os.environ, {}, clear=True):
+            with self.assertRaises(publisher.Blocked):
+                batch.execute()
+        with patch.dict(os.environ, {"INSTAGRAM_LAUNCH_ENABLE_AUTO": "true", "INSTAGRAM_ACCESS_TOKEN": "test"}, clear=True):
+            with self.assertRaises(publisher.Blocked):
+                batch.execute()
+
+    def test_batch_stops_when_previous_attempt_is_ambiguous(self):
+        ledger = {"bc-launch-001": {"status": "attempt_started"}}
+        (self.temp / "state" / "launch_publications.json").write_text(json.dumps(ledger))
+        env = {
+            "INSTAGRAM_LAUNCH_ENABLE_AUTO": "true",
+            "INSTAGRAM_LAUNCH_VARIABLE_ENABLED": "true",
+            "INSTAGRAM_ACCESS_TOKEN": "test",
+        }
+        with patch.dict(os.environ, env, clear=True), \\
+             patch.object(publisher, "publish_item", side_effect=AssertionError("Must never republish")):
+            with self.assertRaises(publisher.Blocked):
+                batch.execute()
+
+    def test_batch_keeps_order_and_skips_already_published_first_story(self):
+        published_at = (publisher.utcnow() - timedelta(minutes=20)).isoformat()
+        ledger = {"bc-launch-001": {"status": "published", "published_at": published_at, "channel": "story"}}
+        (self.temp / "state" / "launch_publications.json").write_text(json.dumps(ledger))
+        called = []
+
+        def fake_publish(token, item):
+            current = publisher.read_ledger()
+            self.assertNotIn(item["id"], current)
+            current[item["id"]] = {
+                "status": "published", "channel": item["channel"],
+                "published_at": publisher.utcnow().isoformat(),
+            }
+            (self.temp / "state" / "launch_publications.json").write_text(json.dumps(current))
+            called.append(item["id"])
+
+        env = {
+            "INSTAGRAM_LAUNCH_ENABLE_AUTO": "true",
+            "INSTAGRAM_LAUNCH_VARIABLE_ENABLED": "true",
+            "INSTAGRAM_ACCESS_TOKEN": "test",
+        }
+        with patch.dict(os.environ, env, clear=True), \\
+             patch.object(publisher, "publish_item", side_effect=fake_publish), \\
+             patch.object(publisher, "check_pacing"), \\
+             patch.object(batch, "seconds_until_allowed", return_value=0), \\
+             patch.object(batch.time, "sleep", side_effect=AssertionError("Should not wait")):
+            batch.execute()
+
+        self.assertEqual(called, [f"bc-launch-{i:03d}" for i in range(2, 28)])
+        self.assertEqual(len(publisher.read_ledger()), 27)
+
+    def test_batch_waits_for_remaining_cooldown_without_publishing(self):
+        published_at = (publisher.utcnow() - timedelta(seconds=30)).isoformat()
+        ledger = {"bc-launch-001": {"status": "published", "published_at": published_at, "channel": "story"}}
+        (self.temp / "state" / "launch_publications.json").write_text(json.dumps(ledger))
+        env = {
+            "INSTAGRAM_LAUNCH_ENABLE_AUTO": "true",
+            "INSTAGRAM_LAUNCH_VARIABLE_ENABLED": "true",
+            "INSTAGRAM_ACCESS_TOKEN": "test",
+        }
+        class StopTest(Exception):
+            pass
+        with patch.dict(os.environ, env, clear=True), \\
+             patch.object(publisher, "publish_item", side_effect=AssertionError("Cannot publish before interval")), \\
+             patch.object(batch.time, "sleep", side_effect=StopTest) as sleeper:
+            with self.assertRaises(StopTest):
+                batch.execute()
+            self.assertGreater(sleeper.call_args.args[0], 0)
+            self.assertLessEqual(sleeper.call_args.args[0], 30)
 
     def test_wrong_instagram_account_blocked(self):
         with patch.object(publisher, "graph_request", return_value={"id": "1", "username": "someone_else", "account_type": "BUSINESS"}):
