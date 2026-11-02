@@ -43,14 +43,25 @@ jobs:
           if not path.is_file() or json.loads(path.read_text(encoding="utf-8")):
               raise SystemExit("Importacao bloqueada: ledger ausente ou com tentativas de publicacao")
           PY
-      - name: Baixar ZIP do Release informado
+      - name: Baixar pacote ZIP da Release (independente do nome do arquivo)
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag }}
+        shell: bash
         run: |
-          gh release download "$RELEASE_TAG" --pattern "best_creations_publicacao_stories_feed.zip" --dir "$RUNNER_TEMP" --clobber
+          set -euo pipefail
+          download_dir="$RUNNER_TEMP/bc-launch-release"
+          mkdir -p "$download_dir"
+          gh release download "$RELEASE_TAG" --pattern "*.zip" --dir "$download_dir"
+          mapfile -d '' archives < <(find "$download_dir" -maxdepth 1 -type f -iname '*.zip' -print0)
+          if [ "${#archives[@]}" -ne 1 ]; then
+            echo "::error::A Release deve conter exatamente 1 arquivo ZIP; encontrados: ${#archives[@]}"
+            exit 1
+          fi
+          cp -- "${archives[0]}" "$RUNNER_TEMP/bc-launch-package.zip"
+          echo "Pacote encontrado: $(basename -- "${archives[0]}")"
       - name: Validar e importar 7 Stories e 20 posts
-        run: python scripts/import_launch_assets.py "$RUNNER_TEMP/best_creations_publicacao_stories_feed.zip"
+        run: python scripts/import_launch_assets.py "$RUNNER_TEMP/bc-launch-package.zip"
       - name: Rodar testes de seguranca
         run: python -m unittest discover -s tests -p 'test_launch_automation.py' -v
       - name: Registrar imagens e fila no GitHub sem publicar
