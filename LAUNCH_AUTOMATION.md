@@ -8,18 +8,18 @@ Conta fixada no código: **@bestcreations011**. Sequência obrigatória: **7 Sto
 
 O pacote preparado no ChatGPT tem o nome exato:
 
-`best_creations_publicacao_stories_feed.zip`
+`Best_Creations_Instagram_Lancamento_27_Artes.zip` (ou outro nome `.zip`; o importador procura um único ZIP na Release)
 
 Ele contém as 27 imagens JPEG e o `manifesto_publicacao.json` com a ordem e as legendas.
 
 1. No GitHub, abra **BMatheus1/best-creations-instagram → Releases → Draft a new release**.
-2. Escolha uma tag, por exemplo `bc-launch-2026-11`. Anexe `best_creations_publicacao_stories_feed.zip`. Publique a Release.
+2. Use a Release **já criada** com a tag `bc-launch-2026-11` e seu anexo `Best_Creations_Instagram_Lancamento_27_Artes.zip`. **Não precisa criar outra Release nem reenviar o ZIP**. Se começar do zero, anexe um único ZIP válido.
    - **Atenção:** esta é uma Release de um repositório público: seu ZIP ficará publicamente acessível. O pacote contém artes destinadas à divulgação, não tokens ou documentos privados.
 3. Abra **Actions → Importar pacote de lancamento (sem publicar) → Run workflow** (branch `main`).
 4. Preencha:
    - `release_tag`: a tag escolhida (por exemplo `bc-launch-2026-11`).
    - `confirm`: `IMPORTAR_27_ARTES`.
-5. O workflow valida os nomes, tamanhos, proporções, a estrutura do ZIP, a conta, a ordem e as imagens; grava os arquivos em `media/launch/` e a fila em `content/launch_queue.json`.
+5. O workflow identifica o único ZIP na Release independentemente do nome, valida os nomes, tamanhos, proporções, a estrutura, a conta, a ordem e as imagens; grava os arquivos em `media/launch/` e a fila em `content/launch_queue.json`.
 6. **A importação não publica nada**. O workflow falha se já houver tentativas registradas no histórico.
 
 Se o workflow não puder fazer `git push`, confira **Settings → Actions → General → Workflow permissions** e habilite permissão para gravar conteúdo (somente se adequado à sua política do repositório). GitHub Actions precisa de `contents: write` para registrar as imagens e o histórico.
@@ -98,3 +98,9 @@ Depois do ZIP: fila completa com 27 imagens e legendas, ainda sem publicações.
 Após ativar: primeiros 7 Stories, então 20 fotos do feed; os **Destaques permanecem etapa manual no Instagram**.
 
 **Esta integração ainda não prova publicação efetiva na Meta.** Esse teste só acontecerá quando a conta, o token e os arquivos públicos forem verificados numa execução autorizada.
+
+## Correção confirmada em 02/11/2026
+
+A Release `bc-launch-2026-11` já foi criada corretamente com o ZIP `Best_Creations_Instagram_Lancamento_27_Artes.zip` (5,9 MB). A execução de importação falhou em **Baixar ZIP do Release informado** porque o script antigo buscava o nome `best_creations_publicacao_stories_feed.zip`: o GitHub retornou `no assets match the file pattern`. O importador agora aceita qualquer **único** ZIP da Release. Os testes antigos também passaram a instalar Pillow antes de executar toda a suíte; a ausência da biblioteca causava quatro falhas independentes.
+
+**Para repetir:** Actions → Importar pacote de lancamento (sem publicar) → Run workflow → branch main → `release_tag: bc-launch-2026-11` → `confirm: IMPORTAR_27_ARTES`. Depois confira se a fila `content/launch_queue.json` existe e execute `dry-run`. **Não ative a variável de publicação automática antes de revisar o primeiro Story e testar a API.**
