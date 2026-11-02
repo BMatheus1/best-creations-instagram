@@ -29,3 +29,10 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_launch_automation.py' -v
       - name: Verificar sintaxe
         run: python -m py_compile scripts/import_launch_assets.py scripts/publish_launch.py
+      - name: Simular lancamento importado (sem Meta e sem publicar)
+        run: |
+          if [ -f content/launch_queue.json ]; then
+            python scripts/publish_launch.py --mode dry-run
+          else
+            echo "Pacote ainda nao importado: simulacao real ignorada"
+          fi
