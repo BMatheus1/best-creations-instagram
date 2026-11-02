@@ -5,6 +5,7 @@ on:
     paths:
       - 'scripts/import_launch_assets.py'
       - 'scripts/publish_launch.py'
+      - 'scripts/run_launch_batch.py'
       - 'tests/test_launch_automation.py'
       - 'content/launch_queue.json'
       - 'state/launch_publications.json'
@@ -43,7 +44,7 @@ jobs:
       - name: Executar testes offline (nao le credenciais)
         run: python -m unittest discover -s tests -p 'test_launch_automation.py' -v
       - name: Verificar sintaxe
-        run: python -m py_compile scripts/import_launch_assets.py scripts/publish_launch.py
+        run: python -m py_compile scripts/import_launch_assets.py scripts/publish_launch.py scripts/run_launch_batch.py
       - name: Simular lancamento importado (sem Meta e sem publicar)
         run: |
           if [ -f content/launch_queue.json ]; then
